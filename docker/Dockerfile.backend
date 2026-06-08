@@ -1,0 +1,57 @@
+# =============================================================================
+#  Stage 1 — Dependency Builder
+#  Install Python packages into a prefix so runtime image stays small
+# =============================================================================
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Build deps needed to compile wheels (torch, faiss-cpu, etc.)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+
+# Install into /install prefix (copied to runtime stage)
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+
+# =============================================================================
+#  Stage 2 — Runtime
+# =============================================================================
+FROM python:3.11-slim AS runtime
+
+WORKDIR /app
+
+# Runtime system deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed Python packages from builder
+COPY --from=builder /install /usr/local
+
+# Copy application source code
+COPY app/ ./app/
+
+# Create persistent data directories
+RUN mkdir -p /data/faiss_index /data/uploads
+
+# Environment variables (can be overridden by docker-compose / .env)
+ENV FAISS_INDEX_PATH=/data/faiss_index \
+    LOCAL_UPLOAD_DIR=/data/uploads \
+    PYTHONPATH=/app \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+EXPOSE 8000
+
+# Health check — hits the /health endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "app.api.routes:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

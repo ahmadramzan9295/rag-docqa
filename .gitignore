@@ -1,0 +1,40 @@
+# Environments
+.env
+.env.local
+.env.*
+.venv/
+venv/
+ENV/
+
+# Python Cache & Build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Node (Vite/React)
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Application Data
+data/
+docker/data/
+
+# IDE / Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS Files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Data (don't bake into image — use volumes instead)
+data/
+faiss_index/
+
+# Secrets / local config
+.env
+
+# Development / IDE
+.github/
+.vscode/
+.idea/
+*.md
+
+# Tests
+tests/
+test_*.py
